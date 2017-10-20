@@ -8,19 +8,25 @@ import Input, { InputLabel } from "material-ui/Input";
 import Select from "material-ui/Select";
 import TextField from 'material-ui/TextField';
 
+const native = true;
+
 const limits = {
     stroke: {
         min: -5,
         max: 5
     }, par: {
-        min: 0,
+        min: 1,
         max: 5
     }
 };
 const styles = theme => ({
-    root: theme
-        .mixins
-        .gutters({ paddingTop: 16, paddingBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }),
+    root: theme.mixins.gutters({
+        paddingTop: 16,
+        paddingBottom: 16,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center"
+    }),
     headline: {
         flexGrow: 0,
         flexShrink: 1
@@ -30,11 +36,14 @@ const styles = theme => ({
     },
     pad: {
         marginLeft: theme.spacing.unit * 4
+    },
+    noRadius: {
+        borderRadius: 0
     }
 });
 
 export class ScorecardItem extends React.PureComponent {
-
+    
     constructor(props) {
         super(props);
         this.state = {
@@ -51,11 +60,13 @@ export class ScorecardItem extends React.PureComponent {
     };
 
     handleParChanged(value) {
+        value = +value;
         let id = this.props.id, field = "par";
         this.props.onChange({ id, field, value });
     }
 
     handleScoreChanged(value) {
+        value = +value;
         let id = this.props.id, field = "score";
         this.props.onChange({ id, field, value });
     }
@@ -74,19 +85,29 @@ export class ScorecardItem extends React.PureComponent {
     getMenuItems(limit) {
         let items = [];
         for (let i = limit.min; i <= limit.max; i++) {
-            items.push(
-                <MenuItem key={i} value={i}>{i}</MenuItem>
+            items.push(native 
+                ? <option key={i} value={i}>{i}</option>
+                : <MenuItem key={i} value={i}>{i}</MenuItem>
             );
         }
         return items;
     }
 
     renderStaticName() {
-        return <Typography onClick={() => this.toggleEditing()} type="headline" className={this.props.classes.headline}>{this.props.name}</Typography>;
+        return <Typography
+            onClick={() => this.toggleEditing()}
+            type="headline"
+            className={this.props.classes.headline}>
+            {this.props.name}
+        </Typography>;
     }
 
     renderEditableName() {
-        return <TextField label="Hole" value={this.props.name} onChange={e => this.handleNameChanged(e.target.value)} onBlur={() => this.toggleEditing()} />;
+        return <TextField
+            label="Custom Name"
+            value={this.props.name}
+            onChange={e => this.handleNameChanged(e.target.value)}
+            onBlur={() => this.toggleEditing()} />;
     }
 
     renderName() {
@@ -99,11 +120,8 @@ export class ScorecardItem extends React.PureComponent {
         return (
             <FormControl>
                 <InputLabel htmlFor="par">Par</InputLabel>
-                <Select
-                    value={this.props.par}
-                    onChange={e => this.handleParChanged(e.target.value)}
-                    input={<Input id="par" />}
-                >
+                <Select native value={this.props.par} input={<Input id="par" />}
+                    onChange={e => this.handleParChanged(e.target.value)}>
                     {this.getMenuItems(limits.par).map(i => i)}
                 </Select>
             </FormControl>
@@ -114,11 +132,8 @@ export class ScorecardItem extends React.PureComponent {
         return (
             <FormControl className={this.props.classes.pad}>
                 <InputLabel htmlFor="score">Score</InputLabel>
-                <Select
-                    value={this.props.score}
-                    onChange={e => this.handleScoreChanged(e.target.value)}
-                    input={<Input id="score" />}
-                >
+                <Select native value={this.props.score} input={<Input id="score" />}
+                    onChange={e => this.handleScoreChanged(e.target.value)}>
                     {this.getMenuItems(limits.stroke).map(i => i)}
                 </Select>
             </FormControl>
@@ -137,14 +152,11 @@ export class ScorecardItem extends React.PureComponent {
     render() {
         return (
             <div>
-                <Paper className={this.props.classes.root}>
+                <Paper className={this.props.classes.root} classes={{rounded: this.props.classes.noRadius}}>
                     {this.renderName()}
                     {this.renderScoreAndPar()}
                 </Paper>
             </div>
-
-            // <div className={this.props.classes.root}>     <span>{state.name}</span>
-            // <span>{state.par}</span>     <span>{state.score}</span> </div>
         );
     }
 }

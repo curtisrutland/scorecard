@@ -9,26 +9,42 @@ import * as Helper from "./helpers/scorecardHelper";
 import './App.css';
 import 'typeface-roboto';
 
+function makeTheme(dark) {
+  if (dark) {
+    return createMuiTheme({ palette: { type: 'dark' } });
+  } else {
+    return createMuiTheme({});
+  }
+}
 
-const theme = createMuiTheme();
+let theme = makeTheme(false);
 
 const styles = theme => ({
   container: {
-    marginTop: 60
+    marginTop: 56
   },
   topDrawerButton: {
     marginTop: 20
   }
 });
 
+function calculateScore(holes) {
+  let par = holes.map(h => h.par).reduce((a, b) => a + b, 0);
+  let score = holes.map(h => h.score).reduce((a,b) => a + b, 0);
+  let absScore = par + score;
+  return { par, score, absScore };
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
     let holes = Helper.getStoredScorecard();
-    this.state = { holes, open: false };
+    let scores = calculateScore(holes);
+    this.state = { holes, open: false, ...scores };
+    console.log(this.state);
   }
 
-  handleUpdate({ id, field, value }) {
+  handleItemUpdate({ id, field, value }) {
     let holes = this.state.holes.slice();
     let item = holes[id];
     item[field] = value;
@@ -36,7 +52,9 @@ class App extends Component {
   }
 
   updateScorecard(holes) {
-    this.setState({ holes });
+    let newState = {holes, ...calculateScore(holes)};
+    this.setState(newState);
+    console.log(newState);
     Helper.storeScorecard(holes);
   }
 
@@ -69,10 +87,10 @@ class App extends Component {
   renderRoot() {
     return (
       <div className="App">
-        <Header onClick={() => this.toggleDrawer(true)} />
+        <Header onClick={() => this.toggleDrawer(true)} par={this.state.par} score={this.state.score} absScore={this.state.absScore} />
         <div className={this.props.classes.container}>
           {this.state.holes.map(item => (
-            <ScorecardItem key={item.id} id={item.id} name={item.name} par={item.par} score={item.score} onChange={update => this.handleUpdate(update)} />
+            <ScorecardItem key={item.id} id={item.id} name={item.name} par={item.par} score={item.score} onChange={update => this.handleItemUpdate(update)} />
           ))}
         </div>
         {this.renderDrawer()}
